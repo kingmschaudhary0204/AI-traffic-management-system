@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Results — NEXUS Traffic AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #050b17; --surface: #0a1628; --border: #1a3050;
+      --accent: #2f86eb; --green: #00e676; --red: #ff4444;
+      --yellow: #ffcc00; --text: #c8d6e5; --muted: #4a7fa8;
+      --emergency: #ff4757;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Mono', monospace; min-height: 100vh;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(47,134,235,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(47,134,235,.04) 1px, transparent 1px);
+      background-size: 40px 40px; pointer-events: none; z-index: 0;
+    }
+
+    header {
+      position: relative; z-index: 10;
+      background: linear-gradient(180deg, #07101f 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    header::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--green), var(--emergency), transparent);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px; height: 40px; border-radius: 9px;
+      background: linear-gradient(135deg, #0d2137, #1a3d5c);
+      border: 1px solid #2f86eb44;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .logo h1 { font-family: 'Orbitron'; font-size: 14px; font-weight: 700; color: #e8f4fd; letter-spacing: 3px; }
+    .logo p  { font-size: 9px; color: var(--muted); letter-spacing: 2px; }
+    .back-btn {
+      font-family: 'Orbitron'; font-size: 10px; letter-spacing: 2px;
+      color: var(--muted); border: 1px solid var(--border); border-radius: 6px;
+      padding: 7px 14px; background: none; cursor: pointer; text-decoration: none;
+      transition: all .2s;
+    }
+    .back-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    main { position: relative; z-index: 5; padding: 36px 40px; max-width: 1200px; margin: 0 auto; }
+
+    .page-title {
+      font-family: 'Orbitron'; font-size: 22px; font-weight: 700;
+      color: #e8f4fd; letter-spacing: 2px; margin-bottom: 6px;
+    }
+    .page-sub { font-size: 11px; color: var(--muted); margin-bottom: 32px; }
+
+    /* ── Stats row ── */
+    .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px; text-align: center;
+    }
+    .stat-card .val {
+      font-family: 'Orbitron'; font-size: 20px; font-weight: 700; margin-bottom: 4px;
+    }
+    .stat-card .lbl { font-size: 8px; color: var(--muted); letter-spacing: 2px; }
+
+    /* ── Video + graph grid ── */
+    .content-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; margin-bottom: 28px; }
+
+    .video-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; position: relative;
+    }
+    .video-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+    }
+    .card-header {
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      font-family: 'Orbitron'; font-size: 11px; letter-spacing: 2px; color: #e8f4fd;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    video, .video-card video {
+      width: 100%; display: block; background: #000;
+    }
+
+    .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+    .graph-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .graph-card::before {
+      content: ''; display: block; height: 3px;
+      background: linear-gradient(90deg, var(--yellow), var(--emergency));
+    }
+    .graph-card img { width: 100%; display: block; }
+    .graph-placeholder {
+      padding: 32px; text-align: center; font-size: 11px; color: var(--muted);
+    }
+
+    /* ── Lane details ── */
+    .lanes-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      overflow: hidden;
+    }
+    .lanes-card::before {
+      content: ''; display: block; height: 3px;
+      background: linear-gradient(90deg, var(--green), var(--accent));
+    }
+    .lane-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px; border-bottom: 1px solid #0d1e31; font-size: 12px;
+    }
+    .lane-row:last-child { border-bottom: none; }
+    .lane-name { color: #e8f4fd; font-weight: 500; }
+    .lane-count { font-family: 'Orbitron'; font-size: 14px; font-weight: 700; }
+    .lane-bar-wrap { flex: 1; margin: 0 14px; background: #0a1628; border-radius: 4px; height: 8px; overflow: hidden; }
+    .lane-bar { height: 100%; border-radius: 4px; transition: width .6s ease; }
+
+    /* ── Signal legend ── */
+    .signal-legend {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px; display: flex; gap: 18px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+    .sig-item { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+    .sig-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+    /* ── Download ── */
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--accent), #1a6bc7);
+      color: #fff; border: none; border-radius: 8px; padding: 11px 22px;
+      font-family: 'Orbitron'; font-size: 11px; letter-spacing: 2px; font-weight: 700;
+      cursor: pointer; text-decoration: none; transition: all .2s;
+      box-shadow: 0 4px 18px rgba(47,134,235,.3);
+    }
+    .download-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    footer {
+      position: relative; z-index: 5;
+      border-top: 1px solid var(--border);
+      padding: 14px 40px; display: flex; justify-content: space-between;
+      font-size: 9px; color: #2a4a6a; letter-spacing: 1.5px;
+    }
+    @media(max-width:900px){
+      .content-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(3,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🚦</div>
+    <div>
+      <h1>NEXUS TRAFFIC AI</h1>
+      <p>ANALYSIS RESULTS</p>
+    </div>
+  </div>
+  <a href="/" class="back-btn">← NEW ANALYSIS</a>
+</header>
+
+<main>
+  <div class="page-title">Processing Complete</div>
+  <div class="page-sub" id="pageSubtitle">Video analysis finished — review detections, lane counts, and signal decisions below.</div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="val" style="color:var(--green)" id="statTotal">—</div><div class="lbl">TOTAL VEHICLES</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--accent)" id="statLanes">4</div><div class="lbl">LANES MONITORED</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--yellow)" id="statGreenLane">—</div><div class="lbl">PRIORITY LANE</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--emergency)" id="statEmergency">—</div><div class="lbl">EMERGENCY</div></div>
+    <div class="stat-card"><div class="val" style="color:var(--text)" id="statFrames">—</div><div class="lbl">FRAMES PROCESSED</div></div>
+  </div>
+
+  <!-- Emergency banner (hidden by default) -->
+  <div id="emergencyBanner" style="display:none;background:#ff475718;border:1px solid #ff4757;border-radius:10px;padding:14px 20px;margin-bottom:24px;font-size:12px;color:#ff6b6b;">
+    🚨 <strong>EMERGENCY VEHICLE DETECTED</strong> — Green corridor was activated. All other lanes held RED until vehicle cleared.
+  </div>
+
+  <!-- Signal legend -->
+  <div class="signal-legend">
+    <div class="sig-item"><div class="sig-dot" style="background:var(--green)"></div> GREEN — Priority lane (highest density or emergency)</div>
+    <div class="sig-item"><div class="sig-dot" style="background:var(--red)"></div> RED — Waiting lane</div>
+    <div class="sig-item"><div class="sig-dot" style="background:var(--yellow)"></div> YELLOW — Transitioning</div>
+    <div class="sig-item"><div class="sig-dot" style="background:var(--emergency)"></div> EMERGENCY — Instant corridor activation</div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Video -->
+    <div class="video-card">
+      <div class="card-header">
+        <div class="dot"></div>
+        PROCESSED OUTPUT — output.mp4
+      </div>
+      <video controls autoplay muted loop id="outputVideo">
+        <source src="/static/output/output.mp4" type="video/mp4"/>
+        Your browser does not support HTML5 video.
+      </video>
+    </div>
+
+    <!-- Right column -->
+    <div class="right-col">
+      <!-- Graph -->
+      <div class="graph-card">
+        <div class="card-header" style="border-bottom:1px solid var(--border);padding:12px 18px;">
+          📊 DENSITY GRAPH
+        </div>
+        <div id="graphContainer">
+          <div class="graph-placeholder">Loading graph…</div>
+        </div>
+      </div>
+
+      <!-- Lane breakdown -->
+      <div class="lanes-card">
+        <div class="card-header" style="border-bottom:1px solid var(--border);padding:12px 18px;">
+          🛣  LANE VEHICLE COUNT
+        </div>
+        <div id="laneRows">
+          <div style="padding:20px;font-size:11px;color:var(--muted)">Loading lane data…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download -->
+  <a href="/static/output/output.mp4" download="nexus_output.mp4" class="download-btn">
+    ⬇  DOWNLOAD OUTPUT.MP4
+  </a>
+</main>
+
+<footer>
+  <span>NEXUS TRAFFIC AI v2.0 · YOLOv8 · PyTorch · OpenCV · Flask</span>
+  <span>AI-POWERED SIGNAL CONTROL</span>
+</footer>
+
+<script>
+  // Load final status from backend
+  async function loadResults() {
+    try {
+      const r    = await fetch('/status');
+      const data = await r.json();
+
+      const counts    = data.lane_counts  || {};
+      const signals   = data.signals      || {};
+      const emergency = data.emergency    || false;
+      const frames    = data.total_frames || 0;
+
+      // Stats
+      const total     = Object.values(counts).reduce((s, v) => s + v, 0);
+      document.getElementById('statTotal').textContent   = total;
+      document.getElementById('statFrames').textContent  = frames;
+      document.getElementById('statEmergency').textContent = emergency ? 'YES 🚨' : 'NONE';
+
+      // Priority lane
+      const greenLane = Object.entries(signals).find(([,s]) => s === 'GREEN');
+      document.getElementById('statGreenLane').textContent =
+        greenLane ? `Lane ${parseInt(greenLane[0]) + 1}` : '—';
+
+      // Emergency banner
+      if (emergency) document.getElementById('emergencyBanner').style.display = 'block';
+
+      // Lane rows
+      const maxCount = Math.max(...Object.values(counts), 1);
+      const laneDiv  = document.getElementById('laneRows');
+      laneDiv.innerHTML = '';
+      Object.entries(counts).forEach(([id, count]) => {
+        const sig   = (signals[id] || 'RED').toUpperCase();
+        const ratio = count / maxCount;
+        const barColor = sig === 'GREEN' ? '#00e676' : sig === 'YELLOW' ? '#ffcc00' : '#ff4444';
+        laneDiv.innerHTML += `
+          <div class="lane-row">
+            <div class="lane-name">Lane ${parseInt(id)+1}</div>
+            <div class="lane-bar-wrap">
+              <div class="lane-bar" style="width:${Math.round(ratio*100)}%;background:${barColor}"></div>
+            </div>
+            <div class="lane-count" style="color:${barColor}">${count}</div>
+            <div style="margin-left:10px;font-size:9px;padding:2px 8px;border-radius:3px;
+              background:${barColor}22;border:1px solid ${barColor}44;color:${barColor};letter-spacing:1px">
+              ${sig}
+            </div>
+          </div>`;
+      });
+
+      // Graph
+      if (data.graph_path) {
+        document.getElementById('graphContainer').innerHTML =
+          `<img src="/${data.graph_path}?t=${Date.now()}" alt="Density Graph"/>`;
+      }
+
+    } catch(e) {
+      document.getElementById('pageSubtitle').textContent = 'Could not load result data.';
+    }
+  }
+
+  loadResults();
+</script>
+</body>
+</html>

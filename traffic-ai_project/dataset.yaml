@@ -1,0 +1,39 @@
+# dataset.yaml — YOLO format dataset configuration
+# Used by train.py for custom traffic model fine-tuning
+#
+# Directory layout expected:
+#   dataset/
+#   ├── images/train/   (training images)
+#   ├── images/val/     (validation images)
+#   ├── labels/train/   (YOLO .txt labels)
+#   └── labels/val/     (YOLO .txt labels)
+
+path: dataset          # root dataset directory
+train: images/train    # relative to path
+val:   images/val      # relative to path
+
+# Number of classes
+nc: 6
+
+# Class names — IDs must match label files
+names:
+  0: Car
+  1: Bus
+  2: Truck
+  3: Motorcycle
+  4: Ambulance
+  5: Fire Brigade
+
+# ── Label format reminder ──────────────────────────────────────────────────────
+# Each .txt label file (one per image) contains one line per object:
+#   <class_id> <x_centre> <y_centre> <width> <height>
+#
+# All values normalised 0.0 – 1.0 relative to image dimensions.
+#
+# Example (a car centred at 50%, 40% of image, 20% wide, 15% tall):
+#   0 0.500 0.400 0.200 0.150
+#
+# Recommended labelling tools:
+#   • Roboflow  (https://roboflow.com)
+#   • LabelImg  (pip install labelImg)
+#   • CVAT      (https://cvat.ai)
